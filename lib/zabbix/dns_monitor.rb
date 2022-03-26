@@ -3,9 +3,9 @@
 require "active_support/concern"
 
 module Zabbix
-  extend ::ActiveSupport::Concern
-
   module DnsMonitor
+    extend ::ActiveSupport::Concern
+
     include Zabbix::Connector
 
     # 生成 DNS 触发器表达式

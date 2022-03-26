@@ -3,9 +3,9 @@
 require "active_support/concern"
 
 module Zabbix
-  extend ::ActiveSupport::Concern
-
   module ItemTrigger
+    extend ::ActiveSupport::Concern
+
     include Zabbix::Connector
 
     # 创建或新增触发器，返回触发器ID | 触发器的 DATA_STRUCTURE

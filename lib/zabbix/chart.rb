@@ -1,9 +1,10 @@
 require "active_support/concern"
 
 module Zabbix
-  extend ActiveSupport::Concern
-
   module Chart
+    extend ActiveSupport::Concern
+    include Zabbix::Connector
+
     # 请求生成 graph_chart 对象
     def graph_chart(graphid, height = 400, width = 900, start_at = "now-6h", end_at = "now")
       # 构造数据结构
@@ -34,10 +35,13 @@ module Zabbix
 
     # 请求后端返回图形
     def _item_chart(url = "/chart.php", data)
+      base_url = Config.url
+      host     = URI(base_url).host
+      conn = Faraday::Connection.new(base_url)
       # 请求接口
-      @conn.get "#{url}" do |r|
+      conn.get "#{url}" do |r|
         r.params.merge!(data)
-        r.headers["Host"]   = Config.url.gsub!(%r{http(s)?://}, "")
+        r.headers["Host"]   = host
         r.headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
         r.headers["Cookie"] = zabbix_token
       end.body

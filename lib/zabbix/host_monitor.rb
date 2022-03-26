@@ -3,9 +3,9 @@
 require "active_support/concern"
 
 module Zabbix
-  extend ::ActiveSupport::Concern
-
   module HostMonitor
+    extend ::ActiveSupport::Concern
+
     include Zabbix::Connector
 
     # 创建或更新 HostMonitor主机监控对象

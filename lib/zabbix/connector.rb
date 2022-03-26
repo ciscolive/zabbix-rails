@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 require "active_support/concern"
+require "faraday"
 
 module Zabbix
-  extend ::ActiveSupport::Concern
-
   module Connector
+    extend ::ActiveSupport::Concern
+
     # 开发测试环境需要单独开启缓存功能：bin/rails dev:cache
     # 将鉴权后的 zabbix-rails 对象缓存到 Rails，减少不必要的认证动作加速执行
     # https://guides.rubyonrails.org/caching_with_rails.html
@@ -20,7 +21,7 @@ module Zabbix
 
     # 获取 zabbix 登录凭证缓存
     def zabbix_token
-      Rails.cache.fetch("zabbix_token", expires_in: 2.hours) do
+      Rails.cache.fetch("zabbix_token", expires_in: 1.hours) do
         Rails.logger.warn("正在请求 zabbix/index.php 登录认证")
         authenticate_with_cookie
       end
@@ -50,28 +51,29 @@ module Zabbix
     rescue => e
       Rails.logger.warn("调用 delete_trigger_monitor 接口异常，原始报错信息: #{e}")
     end
-  end
 
-  # 请求 zabbix 后端认证，返回 Cookie
-  def authenticate_with_cookie
-    # 初始化会话
-    base_url = Config.url
-    @conn    = Faraday::Connection.new(base_url)
+    # 请求 zabbix 后端认证，返回 Cookie
+    def authenticate_with_cookie
+      # 初始化会话
+      base_url = Config.url
+      host     = URI(base_url).host
+      conn     = Faraday::Connection.new(base_url)
 
-    # 登录权限凭证
-    data = {
-      name:      Config.user,
-      password:  Config.password,
-      autologin: 1,
-      enter:     "Sign in",
-    }
+      # 登录权限凭证
+      data = {
+        name:      Config.user,
+        password:  Config.password,
+        autologin: 1,
+        enter:     "Sign in",
+      }
 
-    # 请求认证
-    ret = @conn.post "/index.php" do |r|
-      r.headers["Host"] = base_url.gsub!(%r{http(s)?://}, "")
-      r.body            = data
+      # 请求认证
+      ret = conn.post "/index.php" do |r|
+        r.headers["Host"] = host
+        r.body            = data
+      end
+
+      ret.headers["set-cookie"].presence || nil
     end
-
-    ret.headers["set-cookie"].presence || nil
   end
 end
