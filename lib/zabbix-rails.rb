@@ -2,12 +2,11 @@
 
 # 注意加载顺序
 require "zabbix/version"
-require "zabbix/config"
 require "zabbix/connector"
-require "zabbix/chart"
 require "zabbix/host_monitor"
 require "zabbix/item_trigger"
 require "zabbix/dns_monitor"
+require "zabbix/chart"
 
 # 加载外部依赖
 require "active_support/concern"
@@ -19,8 +18,8 @@ module Zabbix
   class << self
     attr_accessor :url, :user, :password, :debug
 
-    def configure(&block)
-      Config.configure(&block)
+    def config
+      yield self
     end
   end
 end
