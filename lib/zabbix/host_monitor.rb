@@ -15,6 +15,9 @@ module Zabbix
         hostid = item[:hostid]
 
         # 封装数据之前确保设备属组已经存在
+        zabbix_connector.hostgroups.get_or_create_hostgroups(item.group) if item.group.present?
+
+        # 检查是否已存在监控对象
         search_id = zabbix_connector.hosts.get_id(host: item.sn)
         # 构建 zabbix-rails 监控对象数据结构，创建或者更新数据
         if hostid.present?

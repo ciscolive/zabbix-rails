@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zabbix-rails (0.2.4)
+    zabbix-rails (0.2.5)
       rails
 
 GEM

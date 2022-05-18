@@ -21,6 +21,27 @@ module Zabbix
       _item_chart("/chart2.php", data)
     end
 
+    # 接口图片
+    def iface_chart(*itemids)
+      # 构造数据结构
+      data = {
+        from:    "now-6h",
+        to:      "now",
+        itemids: [itemids].flatten,
+        height:  400,
+        width:   900
+      }
+
+      # 请求后端返回图片对象
+      _item_chart(data)
+    end
+
+    # 保存接口流量图片
+    def save_iface_graph(*itemids)
+      filename = generate_name([itemids].flatten[0])
+      save_file(filename, iface_chart(itemids))
+    end
+
     # 请求生成 item_chart 对象
     def item_chart(itemid, height = 400, width = 900, start_at = "now-6h", end_at = "now")
       # 构造数据结构
@@ -44,7 +65,7 @@ module Zabbix
       conn.get(url) do |r|
         r.params.merge!(data)
         r.headers["Host"]   = host
-        r.headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+        r.headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;"
         r.headers["Cookie"] = zabbix_token
       end.body
     end
